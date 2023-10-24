@@ -25,6 +25,20 @@ impl Coverage {
         }
     }
 
+    pub fn total_coverage(&self) -> f64 {
+        let mut hit = 0;
+        let mut found = 0;
+
+        for data in self.files.values() {
+            if let (Some(file_hit), Some(file_found)) = (data.hit, data.found) {
+                hit += file_hit;
+                found += file_found;
+            }
+        }
+
+        (hit as f64) / (found as f64)
+    }
+
     pub fn consume(&mut self, record: Record) -> miette::Result<()> {
         match &mut self.state {
             State::None => match record {
