@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use clap::Parser;
 use lcov::Reader;
 use miette::Context;
@@ -8,19 +6,17 @@ use miette::IntoDiagnostic;
 mod coverage;
 use coverage::Coverage;
 
-#[derive(Parser)]
-struct Opts {
-    /// Coverage file to read.
-    file: PathBuf,
-}
+mod cli;
+mod command;
+mod git;
 
 fn main() -> miette::Result<()> {
-    let opts = Opts::parse();
+    let opts = cli::Opts::parse();
 
     let mut coverage = Coverage::new();
-    let reader = Reader::open_file(&opts.file)
+    let reader = Reader::open_file(&opts.coverage_file)
         .into_diagnostic()
-        .wrap_err_with(|| format!("Failed to open file {:?}", opts.file))?;
+        .wrap_err_with(|| format!("Failed to open file {:?}", opts.coverage_file))?;
     for item in reader {
         let item = item.into_diagnostic()?;
         coverage.consume(item)?;
