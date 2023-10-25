@@ -38,6 +38,11 @@ pub struct Opts {
     #[arg(long)]
     output: Option<PathBuf>,
 
+    /// Minimum coverage, as a decimal percentage. Set this to 1 to require that every line is
+    /// covered, or set this to 0.7 to require that 70% of lines are covered.
+    #[arg(long)]
+    min_coverage: Option<f64>,
+
     /// Coverage file to read.
     ///
     /// The coverage file should be in `lcov` format, although only line coverage is supported
@@ -55,6 +60,17 @@ impl Opts {
                 .map(|file| Box::new(file) as Box<dyn Write>),
             None => Ok(Box::new(std::io::stdout())),
         }
+    }
+
+    pub fn min_coverage(&self) -> Option<f64> {
+        self.min_coverage.map(|coverage| {
+            if coverage > 1.0 {
+                // They probably meant a percentage.
+                coverage / 100.0
+            } else {
+                coverage
+            }
+        })
     }
 
     pub fn changed_files(&self) -> miette::Result<Vec<PathBuf>> {
